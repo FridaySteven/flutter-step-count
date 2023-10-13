@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_step_count/src/service/flutter_background_service.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
 import 'src/settings/settings_service.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeService();
+
   // Set up the SettingsController, which will glue user settings to multiple
   // Flutter Widgets.
   final settingsController = SettingsController(SettingsService());
