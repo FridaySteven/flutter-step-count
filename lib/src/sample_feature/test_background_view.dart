@@ -17,20 +17,18 @@ class _TestBackgroundState extends State<TestBackground> {
   String text = "Stop Service";
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Service App'),
-        ),
-        body: Column(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Service App'),
+      ),
+      body: Center(
+        child: Column(
           children: [
             StreamBuilder<Map<String, dynamic>?>(
               stream: FlutterBackgroundService().on('update'),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const CircularProgressIndicator();
                 }
 
                 final data = snapshot.data!;
@@ -45,13 +43,13 @@ class _TestBackgroundState extends State<TestBackground> {
               },
             ),
             ElevatedButton(
-              child: const Text("Foreground Mode"),
+              child: const Text("Foreground Mode \n IOS not support"),
               onPressed: () {
                 FlutterBackgroundService().invoke("setAsForeground");
               },
             ),
             ElevatedButton(
-              child: const Text("Background Mode"),
+              child: const Text("Background Mode \n IOS not support"),
               onPressed: () {
                 FlutterBackgroundService().invoke("setAsBackground");
               },

@@ -116,7 +116,7 @@ void onStart(ServiceInstance service) async {
     preferences.reload();
     final scTxt = preferences.getString('Step_Count') ??
         'Open Step Count Page to get count';
-    print('FLUTTER BACKGROUND SERVICE: $scTxt');
+    debugPrint('FLUTTER BACKGROUND SERVICE: $scTxt');
 
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
@@ -169,5 +169,3 @@ void onStart(ServiceInstance service) async {
     );
   });
 }
-
-

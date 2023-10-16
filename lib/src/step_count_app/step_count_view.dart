@@ -40,6 +40,7 @@ class _StepCountViewState extends State<StepCountView> {
         ),
       ),
       body: ListView(
+        physics: const BouncingScrollPhysics(),
         children: [
           TopBannerStepCountWidget(expController: expController),
           const Padding(
@@ -103,6 +104,8 @@ class _StepCountViewState extends State<StepCountView> {
                 scrollDirection: Axis.horizontal,
                 itemCount: provider.stepCountPreiodMinList.length,
                 itemBuilder: (context, index) {
+                  final reversedIdx =
+                      provider.stepCountPreiodMinList.length - index - 1;
                   return Card(
                     child: Padding(
                       padding: const EdgeInsets.all(10),
@@ -111,7 +114,7 @@ class _StepCountViewState extends State<StepCountView> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${provider.stepCountPreiodMinList[index].displayStepCount}',
+                            '${provider.stepCountPreiodMinList[reversedIdx].displayStepCount}',
                             style: const TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
