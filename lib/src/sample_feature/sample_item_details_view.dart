@@ -141,8 +141,8 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
               onPressed: () {
                 SystemNavigator.pop();
               },
-              child: const Text(
-                  'Keep step conter working, but want to get out from app? Click Me'),
+                child: const Text(
+                    'Keep step conter working, but want to get out from app? Click Me'),
             )
           ],
         ),

@@ -225,6 +225,8 @@ class StepCountProvider extends ChangeNotifier {
       motionPermission = Permission.sensors;
     }
 
+    debugPrint('SZS --====> ${await motionPermission.status}');
+
     if (!await motionPermission.isGranted) {
       return await motionPermission.request();
     }
