@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_step_count/src/provider/step_count_provider.dart';
+import 'package:flutter_step_count/src/step_count_app/step_count_provider.dart';
 import 'package:provider/provider.dart';
 
 /// Displays detailed information about a SampleItem.
@@ -38,12 +38,12 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
           children: [
             _stepCountCard(
               'Total count (starting form root when app first install) and restart phone to recount (start from 0)',
-              walkStatus: provider.status,
+              walkStatus: provider.statusTxt,
               displaySteps: provider.steps,
             ),
             _stepCountCard(
               'Total count (Start from 0 on page start)',
-              walkStatus: provider.status,
+              walkStatus: provider.statusTxt,
               displaySteps: provider.displaySteps,
               startEndDTText: provider.displayStepsDT,
             ),
@@ -53,7 +53,7 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
               children: [
                 _stepCountCard(
                   'Total count (by hour)',
-                  walkStatus: provider.status,
+                  walkStatus: provider.statusTxt,
                   displaySteps: provider.displayStepCountHour,
                   // startEndDTText: provider.displayStepsDT,
                 ),
@@ -98,7 +98,7 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
               children: [
                 _stepCountCard(
                   'Total count (by minute)',
-                  walkStatus: provider.status,
+                  walkStatus: provider.statusTxt,
                   displaySteps: provider.displayStepCountMin,
                   // startEndDTText: provider.displayStepsDT,
                 ),
@@ -141,8 +141,8 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
               onPressed: () {
                 SystemNavigator.pop();
               },
-                child: const Text(
-                    'Keep step conter working, but want to get out from app? Click Me'),
+              child: const Text(
+                  'Keep step conter working, but want to get out from app? Click Me'),
             )
           ],
         ),

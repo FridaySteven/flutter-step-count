@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_step_count/src/sample_feature/sample_item_details_view.dart';
-import 'package:flutter_step_count/src/sample_feature/sample_item_list_view.dart';
-import 'package:flutter_step_count/src/service/flutter_background_service.dart';
+import 'package:flutter_step_count/src/sample_feature/step_count_details.dart';
+import 'package:flutter_step_count/src/sample_feature/home_view.dart';
+import 'package:flutter_step_count/src/sample_feature/test_background_view.dart';
 import 'package:flutter_step_count/src/settings/settings_controller.dart';
 import 'package:flutter_step_count/src/settings/settings_view.dart';
 import 'package:flutter_step_count/src/step_count_app/step_count_provider.dart';
@@ -27,7 +27,7 @@ Route<dynamic> generateRoute(
             ),
           ], child: const StepCountView());
         default:
-          return const SampleItemListView();
+          return const HomeView();
       }
     },
   );

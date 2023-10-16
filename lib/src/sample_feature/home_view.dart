@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_step_count/src/service/flutter_background_service.dart';
+import 'package:flutter_step_count/src/sample_feature/test_background_view.dart';
 import 'package:flutter_step_count/src/step_count_app/step_count_view.dart';
 
 import '../settings/settings_view.dart';
 import 'sample_item.dart';
-import 'sample_item_details_view.dart';
+import 'step_count_details.dart';
 
 /// Displays a list of SampleItems.
-class SampleItemListView extends StatelessWidget {
-  const SampleItemListView({
+class HomeView extends StatelessWidget {
+  const HomeView({
     super.key,
     this.items = const [
       SampleItem(1, 'Step Count', SampleItemDetailsView.routeName),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_step_count/src/step_count_app/step_count_model.dart';
 import 'package:intl/intl.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -15,6 +16,7 @@ class StepCountProvider extends ChangeNotifier {
   int steps = 0;
   DateTime timeStamp1 = DateTime.now();
   bool status = false;
+  String statusTxt = '';
   DateTime timeStamp2 = DateTime.now();
   String dtFromat = 'yyyy-MM-dd hh:mm:ss a';
 
@@ -71,6 +73,43 @@ class StepCountProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  /// Handle status changed
+  void _onPedestrianStatusChanged(PedestrianStatus event) {
+    statusTxt = event.status;
+    status = event.status == 'walking';
+
+    timeStamp2 = event.timeStamp;
+
+    debugPrint('szs ====::::::::::::::::::> $status');
+    notifyListeners();
+  }
+
+  late Permission motionPermission;
+  Future<PermissionStatus?> _getMotionPermission() async {
+    if (Platform.isAndroid) {
+      motionPermission = Permission.activityRecognition;
+    } else {
+      motionPermission = Permission.sensors;
+    }
+
+    if (!await motionPermission.isGranted) {
+      return await motionPermission.request();
+    }
+    return PermissionStatus.granted;
+  }
+
+  /// Handle the error
+  void onPedestrianStatusError(error) {
+    debugPrint('Error onPedestrianStatusError: $error');
+  }
+
+  /// Handle the error
+  void onStepCountError(error) {
+    debugPrint('Error onStepCountError: $error');
+  }
+
+  // ==================== Below is additional function =====================
 
   //#region on page load count (start from 0 everytime page init)
   bool firstStepCount = false;
@@ -206,45 +245,6 @@ class StepCountProvider extends ChangeNotifier {
   }
   //#endregion check every minute step count
 
-  /// Handle status changed
-  void _onPedestrianStatusChanged(PedestrianStatus event) {
-    if (event.status == 'walking') {
-      status = true;
-    } else {
-      status = false;
-    }
-    timeStamp2 = event.timeStamp;
-
-    debugPrint('szs ====::::::::::::::::::> $status');
-    notifyListeners();
-  }
-
-  late Permission motionPermission;
-  Future<PermissionStatus?> _getMotionPermission() async {
-    if (Platform.isAndroid) {
-      motionPermission = Permission.activityRecognition;
-    } else {
-      motionPermission = Permission.sensors;
-    }
-
-    debugPrint('SZS --====> ${await motionPermission.status}');
-
-    if (!await motionPermission.isGranted) {
-      return await motionPermission.request();
-    }
-    return PermissionStatus.granted;
-  }
-
-  /// Handle the error
-  void onPedestrianStatusError(error) {
-    debugPrint('Error onPedestrianStatusError: $error');
-  }
-
-  /// Handle the error
-  void onStepCountError(error) {
-    debugPrint('Error onStepCountError: $error');
-  }
-
   void onDeactivate() {
     // stepCountPreiodHourList.clear();
     // stepCountPreiodMinList.clear();
@@ -265,18 +265,4 @@ class StepCountProvider extends ChangeNotifier {
     isRunningBG = await service.isRunning();
     notifyListeners();
   }
-}
-
-class StepCountPeriod {
-  StepCountPeriod({
-    required this.stepCountDateTime,
-    required this.stepCount,
-    required this.displayStepCount,
-    required this.previousStepCount,
-  });
-
-  DateTime stepCountDateTime;
-  int stepCount;
-  int displayStepCount;
-  int previousStepCount;
 }

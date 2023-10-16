@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_step_count/src/provider/step_count_provider.dart';
+import 'package:flutter_step_count/src/step_count_app/step_count_provider.dart';
 import 'package:flutter_step_count/src/router.dart';
 import 'package:provider/provider.dart';
 
