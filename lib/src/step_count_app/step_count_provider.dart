@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class StepCountProvider extends ChangeNotifier {
       }
       checkRunningBackground();
       initPlatformState();
+      // buildMinStepCount();
     });
   }
 
@@ -67,7 +69,12 @@ class StepCountProvider extends ChangeNotifier {
 
     buildPageLoadStepCount();
     buildHourStepCount();
-    buildMinStepCount();
+    // TODO:: take note
+    // it mike be some error if concurrently the step need to be calculate
+    // instate we use timmer to keep track the step in every ...(time)
+    if (firstStepCountMin) {
+      buildMinStepCount();
+    }
 
     debugPrint('szs ====> $steps, $displaySteps, $previousSteps');
 
@@ -190,15 +197,18 @@ class StepCountProvider extends ChangeNotifier {
 
   //#region check every minute step count
   bool firstStepCountMin = false;
+  late Timer minTimer;
   List<StepCountPeriod> stepCountPreiodMinList = [];
   int displayStepCountMin = 0;
   void buildMinStepCount() {
-    if (firstStepCountMin) {
+    _minStepCountChecking();
+    firstStepCountMin = false;
+
+    minTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      debugPrint('szs ==-=-=-=-=-=-=-=-=- timer: $timer');
       _minStepCountChecking();
-      firstStepCountMin = false;
-    } else {
-      _minStepCountChecking();
-    }
+      notifyListeners();
+    });
   }
 
   bool firstAddMinList = false;
@@ -248,6 +258,7 @@ class StepCountProvider extends ChangeNotifier {
   void onDeactivate() {
     // stepCountPreiodHourList.clear();
     // stepCountPreiodMinList.clear();
+    minTimer.cancel();
   }
 
   void flush() {

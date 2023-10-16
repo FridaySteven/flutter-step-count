@@ -24,6 +24,12 @@ class _StepCountViewState extends State<StepCountView> {
   }
 
   @override
+  void deactivate() {
+    super.deactivate();
+    Provider.of<StepCountProvider>(context, listen: false).onDeactivate();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
