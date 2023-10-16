@@ -26,12 +26,14 @@ class StepCountProvider extends ChangeNotifier {
       final permission = await _getMotionPermission();
 
       if (permission != null && context.mounted) {
-        if (!permission.isGranted) {
-          Navigator.pop(context);
-        } else if (permission.isPermanentlyDenied) {
+        if (permission.isPermanentlyDenied) {
           Navigator.pop(context);
           await Future.delayed(const Duration(milliseconds: 500), () {});
           openAppSettings();
+          return;
+        } else if (!permission.isGranted) {
+          Navigator.pop(context);
+          return;
         }
       }
       checkRunningBackground();
