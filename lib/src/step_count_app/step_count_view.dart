@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_step_count/src/step_count_app/step_count_provider.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class StepCountView extends StatefulWidget {
@@ -24,7 +25,14 @@ class _StepCountViewState extends State<StepCountView> {
   }
 
   @override
+  void deactivate() {
+    super.deactivate();
+    Provider.of<StepCountProvider>(context, listen: false).onDeactivate();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    ScrollController controller = ScrollController();
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: const SystemUiOverlayStyle(
@@ -39,111 +47,233 @@ class _StepCountViewState extends State<StepCountView> {
           ),
         ),
       ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
+      body: Consumer<StepCountProvider>(builder: (context, provider, _) {
+        return ListView(
+          controller: controller,
+          physics: const BouncingScrollPhysics(),
+          children: [
+            TopBannerStepCountWidget(expController: expController),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'My Step in Every Hour',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => provider.buildHourStepCount(refresh: true),
+                    style: ElevatedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      backgroundColor: Colors.black,
+                      minimumSize: const Size(30, 30),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      size: 15,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 85,
+              child: provider.loadingHour
+                  ? const Center(child: Text('Loading...'))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: provider.stepCountPreiodHourList.length,
+                      itemBuilder: (context, index) {
+                        final reversedIdx =
+                            provider.stepCountPreiodHourList.length - index - 1;
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${provider.stepCountPreiodHourList[reversedIdx].displaySteps}',
+                                  style: const TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text('Steps'),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'My Step in Every Minute',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => provider.buildMinStepCount(refresh: true),
+                    style: ElevatedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      backgroundColor: Colors.black,
+                      minimumSize: const Size(30, 30),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      size: 15,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 85,
+              child: provider.loadingMin
+                  ? const Center(child: Text('Loading...'))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: provider.stepCountPreiodMinList.length,
+                      itemBuilder: (context, index) {
+                        final reversedIdx =
+                            provider.stepCountPreiodMinList.length - index - 1;
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${provider.stepCountPreiodMinList[reversedIdx].displaySteps}',
+                                  style: const TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text('Steps'),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Text(
+                'History',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListView.builder(
+              itemCount: provider.storeStepList.length,
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemBuilder: (context, index) => Container(
+                margin: const EdgeInsets.all(10),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Colors.black,
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.date_range_outlined,
+                          color: Colors.white),
+                      title: Text(
+                        DateFormat(provider.dtFromat)
+                            .format(provider.storeStepList[index].dateTime),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.run_circle_outlined,
+                          color: Colors.white),
+                      title: Text(
+                        '${provider.storeStepList[index].steps}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      }),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          TopBannerStepCountWidget(expController: expController),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Text(
-              'My Step in Every Hour',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 85,
-            child: Consumer<StepCountProvider>(builder: (context, provider, _) {
-              return ListView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                scrollDirection: Axis.horizontal,
-                itemCount: provider.stepCountPreiodHourList.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${provider.stepCountPreiodHourList[index].displayStepCount}',
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Text('Steps'),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+          FloatingActionButton(
+            onPressed: () {
+              controller.animateTo(
+                controller.position.minScrollExtent,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.bounceInOut,
               );
-            }),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Text(
-              'My Step in Every Minute',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            },
+            backgroundColor: Colors.grey,
+            child: const Icon(
+              Icons.arrow_upward_rounded,
             ),
           ),
-          SizedBox(
-            height: 85,
-            child: Consumer<StepCountProvider>(builder: (context, provider, _) {
-              return ListView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                scrollDirection: Axis.horizontal,
-                itemCount: provider.stepCountPreiodMinList.length,
-                itemBuilder: (context, index) {
-                  final reversedIdx =
-                      provider.stepCountPreiodMinList.length - index - 1;
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${provider.stepCountPreiodMinList[reversedIdx].displayStepCount}',
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Text('Steps'),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            onPressed: () {
+              controller.animateTo(
+                controller.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.bounceInOut,
               );
-            }),
-          ),
-          ListView.builder(
-            itemCount: 30,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemBuilder: (context, index) => Container(
-              margin: const EdgeInsets.all(10),
-              width: double.infinity,
-              height: 300,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: Colors.black,
-              ),
+            },
+            backgroundColor: Colors.grey,
+            child: const Icon(
+              Icons.arrow_downward_rounded,
             ),
-          )
+          ),
         ],
+      ),
+      endDrawer: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 40),
+        child: Drawer(
+          width: MediaQuery.sizeOf(context).width * 3 / 5,
+          backgroundColor: Colors.grey,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(30)),
+          ),
+          child: ListView.builder(
+            itemCount: 20,
+            itemBuilder: (context, index) => ListTile(
+              title: Text(
+                'Title $index',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
