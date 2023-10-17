@@ -71,7 +71,7 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${provider.stepCountPreiodHourList[index].displayStepCount}',
+                                '${provider.stepCountPreiodHourList[index].displaySteps}',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -116,7 +116,7 @@ class _SampleItemDetailsViewState extends State<SampleItemDetailsView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${provider.stepCountPreiodMinList[index].displayStepCount}',
+                                '${provider.stepCountPreiodMinList[index].displaySteps}',
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,

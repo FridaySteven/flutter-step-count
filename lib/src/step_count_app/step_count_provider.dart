@@ -20,6 +20,7 @@ class StepCountProvider extends ChangeNotifier {
   String statusTxt = '';
   DateTime timeStamp2 = DateTime.now();
   String dtFromat = 'yyyy-MM-dd hh:mm:ss a';
+  final storeStepList = <StepCountModel>[];
 
   void initState(BuildContext context) {
     flush();
@@ -41,7 +42,6 @@ class StepCountProvider extends ChangeNotifier {
       }
       checkRunningBackground();
       initPlatformState();
-      // buildMinStepCount();
     });
   }
 
@@ -63,18 +63,15 @@ class StepCountProvider extends ChangeNotifier {
     steps = event.steps;
     timeStamp1 = event.timeStamp;
 
+    storeStepList.add(StepCountModel(dateTime: timeStamp1, steps: steps));
+
     SharedPreferences.getInstance().then((preferences) async {
       await preferences.setString("Step_Count", "$steps");
     });
 
     buildPageLoadStepCount();
     buildHourStepCount();
-    // TODO:: take note
-    // it mike be some error if concurrently the step need to be calculate
-    // instate we use timmer to keep track the step in every ...(time)
-    if (firstStepCountMin) {
-      buildMinStepCount();
-    }
+    buildMinStepCount();
 
     debugPrint('szs ====> $steps, $displaySteps, $previousSteps');
 
@@ -139,118 +136,165 @@ class StepCountProvider extends ChangeNotifier {
   //#endregion on page load count (start from 0 everytime page init)
 
   //#region check every hour step count
+  bool loadingHour = false;
   bool firstStepCountHour = false;
   List<StepCountPeriod> stepCountPreiodHourList = [];
   int displayStepCountHour = 0;
-  void buildHourStepCount() {
-    if (firstStepCountHour) {
-      _hourStepCountChecking();
-      firstStepCountHour = false;
-    } else {
-      _hourStepCountChecking();
+  void buildHourStepCount({bool refresh = false}) {
+    // Auto refresh
+    if (!refresh) {
+      _hourStepCountChecking(
+        steps,
+        timeStamp1,
+        checkTime: DateTime.now(),
+      );
+      return;
     }
+
+    loadingHour = true;
+    notifyListeners();
+    stepCountPreiodHourList.clear();
+    firstAddHourList = true;
+
+    for (StepCountModel storeStep in storeStepList) {
+      _hourStepCountChecking(
+        storeStep.steps,
+        storeStep.dateTime,
+        checkTime: storeStep.dateTime,
+      );
+    }
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      loadingHour = false;
+      notifyListeners();
+    });
   }
 
   bool firstAddHourList = false;
-  void _hourStepCountChecking() {
+  void _hourStepCountChecking(
+    int currentSteps,
+    DateTime currentTimeStamp, {
+    required DateTime checkTime,
+  }) {
     if (stepCountPreiodHourList.isNotEmpty) {
-      final lastSC = stepCountPreiodHourList.last.previousStepCount;
+      final lastStepDetails = stepCountPreiodHourList.last;
+      final passFirstStep = lastStepDetails.passEveryFirstSteps;
+      final lastDT = lastStepDetails.dateTime;
+      final overHour = checkTime.difference(lastDT).inHours;
 
-      // if (lastSC < steps) {
-      //   stepCountPreiodHourList.last
-      //     ..stepCountDateTime = timeStamp1
-      //     ..stepCount = steps;
-      // }
-
-      final lastDT = stepCountPreiodHourList.last.stepCountDateTime;
-      final lastHour = DateTime.now().difference(lastDT).inHours;
-
-      int calStep = steps - lastSC;
-      if (lastHour > 0) {
+      int calStep = currentSteps - passFirstStep;
+      if (overHour > 0) {
+        final remainingSteps = currentSteps - lastStepDetails.previousSteps;
         stepCountPreiodHourList.add(StepCountPeriod(
-          stepCountDateTime: timeStamp1,
-          stepCount: calStep,
-          displayStepCount: calStep,
-          previousStepCount: steps,
+          dateTime: currentTimeStamp,
+          keepTrackFirstCount: calStep,
+          displaySteps: calStep + remainingSteps,
+          passEveryFirstSteps: currentSteps - remainingSteps,
+          previousSteps: currentSteps,
         ));
         displayStepCountHour = calStep;
         firstAddHourList = false;
       } else {
         if (firstAddHourList) {
-          calStep += stepCountPreiodHourList.last.stepCount;
+          calStep += lastStepDetails.keepTrackFirstCount;
         }
+
         displayStepCountHour = calStep;
-        stepCountPreiodHourList.last.displayStepCount = displayStepCountHour;
+        lastStepDetails
+          ..previousSteps = currentSteps
+          ..displaySteps = displayStepCountHour;
       }
     } else {
-      displayStepCountHour = steps;
+      displayStepCountHour = currentSteps;
       stepCountPreiodHourList.add(StepCountPeriod(
-        stepCountDateTime: timeStamp1,
-        stepCount: displayStepCountHour,
-        displayStepCount: displayStepCountHour,
-        previousStepCount: displayStepCountHour,
+        dateTime: currentTimeStamp,
+        keepTrackFirstCount: displayStepCountHour,
+        displaySteps: displayStepCountHour,
+        passEveryFirstSteps: displayStepCountHour,
+        previousSteps: displayStepCountHour,
       ));
-      firstAddHourList = true;
     }
   }
   //#endregion check every hour step count
 
   //#region check every minute step count
+  bool loadingMin = false;
   bool firstStepCountMin = false;
-  late Timer minTimer;
   List<StepCountPeriod> stepCountPreiodMinList = [];
   int displayStepCountMin = 0;
-  void buildMinStepCount() {
-    _minStepCountChecking();
-    firstStepCountMin = false;
+  void buildMinStepCount({bool refresh = false}) {
+    // Auto refresh
+    if (!refresh) {
+      _minStepCountChecking(
+        steps,
+        timeStamp1,
+        checkTime: DateTime.now(),
+      );
+      return;
+    }
+    loadingMin = true;
+    notifyListeners();
+    stepCountPreiodMinList.clear();
+    firstAddMinList = true;
 
-    minTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      debugPrint('szs ==-=-=-=-=-=-=-=-=- timer: $timer');
-      _minStepCountChecking();
+    for (StepCountModel storeStep in storeStepList) {
+      _minStepCountChecking(
+        storeStep.steps,
+        storeStep.dateTime,
+        checkTime: storeStep.dateTime,
+      );
+    }
+
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      loadingMin = false;
       notifyListeners();
     });
   }
 
   bool firstAddMinList = false;
-  void _minStepCountChecking() {
+  Future<void> _minStepCountChecking(
+    int currentSteps,
+    DateTime currentTimeStamp, {
+    required DateTime checkTime,
+  }) async {
     if (stepCountPreiodMinList.isNotEmpty) {
-      final previousLastSC = stepCountPreiodMinList.last.previousStepCount;
+      final lastStepDetails = stepCountPreiodMinList.last;
+      final passFirstStep = lastStepDetails.passEveryFirstSteps;
+      final lastDT = lastStepDetails.dateTime;
+      final overMin = checkTime.difference(lastDT).inMinutes;
 
-      // if (lastSC < steps) {
-      //   stepCountPreiodMinList.last
-      //     ..stepCountDateTime = timeStamp1
-      //     ..stepCount = steps;
-      // }
-
-      final lastDT = stepCountPreiodMinList.last.stepCountDateTime;
-      final lastMin = DateTime.now().difference(lastDT).inMinutes;
-
-      int calStep = steps - previousLastSC;
-      if (lastMin > 0) {
+      int calStep = currentSteps - passFirstStep;
+      if (overMin > 0) {
+        final remainingSteps = currentSteps - lastStepDetails.previousSteps;
+        debugPrint('szsdebug :::: $remainingSteps');
         stepCountPreiodMinList.add(StepCountPeriod(
-          stepCountDateTime: timeStamp1,
-          stepCount: calStep,
-          displayStepCount: calStep,
-          previousStepCount: steps,
+          dateTime: currentTimeStamp,
+          keepTrackFirstCount: calStep,
+          displaySteps: calStep + remainingSteps,
+          passEveryFirstSteps: currentSteps - remainingSteps,
+          previousSteps: currentSteps,
         ));
         displayStepCountMin = calStep;
         firstAddMinList = false;
       } else {
         if (firstAddMinList) {
-          calStep += stepCountPreiodMinList.last.stepCount;
+          calStep += lastStepDetails.keepTrackFirstCount;
         }
+
         displayStepCountMin = calStep;
-        stepCountPreiodMinList.last.displayStepCount = displayStepCountMin;
+        lastStepDetails
+          ..previousSteps = currentSteps
+          ..displaySteps = displayStepCountMin;
       }
     } else {
-      displayStepCountMin = steps;
+      displayStepCountMin = currentSteps;
       stepCountPreiodMinList.add(StepCountPeriod(
-        stepCountDateTime: timeStamp1,
-        stepCount: displayStepCountMin,
-        displayStepCount: displayStepCountMin,
-        previousStepCount: displayStepCountMin,
+        dateTime: currentTimeStamp,
+        keepTrackFirstCount: displayStepCountMin,
+        displaySteps: displayStepCountMin,
+        passEveryFirstSteps: displayStepCountMin,
+        previousSteps: displayStepCountMin,
       ));
-      firstAddMinList = true;
     }
   }
   //#endregion check every minute step count
@@ -258,7 +302,6 @@ class StepCountProvider extends ChangeNotifier {
   void onDeactivate() {
     // stepCountPreiodHourList.clear();
     // stepCountPreiodMinList.clear();
-    minTimer.cancel();
   }
 
   void flush() {
@@ -268,6 +311,8 @@ class StepCountProvider extends ChangeNotifier {
 
     firstAddHourList = true;
     firstAddMinList = true;
+
+    storeStepList.clear();
   }
 
   var isRunningBG = false;
