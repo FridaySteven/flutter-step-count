@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_step_count/src/step_count_app/step_count_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:numeral/ext.dart';
 import 'package:provider/provider.dart';
 
 class StepCountView extends StatefulWidget {
@@ -101,7 +102,9 @@ class _StepCountViewState extends State<StepCountView> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '${provider.stepCountPreiodHourList[reversedIdx].displaySteps}',
+                                  provider.stepCountPreiodHourList[reversedIdx]
+                                      .displaySteps
+                                      .numeral(),
                                   style: const TextStyle(
                                     fontSize: 30,
                                     fontWeight: FontWeight.bold,
@@ -163,7 +166,9 @@ class _StepCountViewState extends State<StepCountView> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  '${provider.stepCountPreiodMinList[reversedIdx].displaySteps}',
+                                  provider.stepCountPreiodMinList[reversedIdx]
+                                      .displaySteps
+                                      .numeral(),
                                   style: const TextStyle(
                                     fontSize: 30,
                                     fontWeight: FontWeight.bold,
@@ -213,7 +218,7 @@ class _StepCountViewState extends State<StepCountView> {
                       leading: const Icon(Icons.run_circle_outlined,
                           color: Colors.white),
                       title: Text(
-                        '${provider.storeStepList[index].steps}',
+                        provider.storeStepList[index].steps.numeral(),
                         style: const TextStyle(color: Colors.white),
                       ),
                     ),
@@ -321,7 +326,7 @@ class _TopBannerStepCountWidgetState extends State<TopBannerStepCountWidget> {
                         transformHitTests: false,
                         scale: 1,
                         child: Text(
-                          '${provider.steps}',
+                          provider.steps.numeral(),
                           softWrap: true,
                           style: const TextStyle(
                             color: Colors.white,
